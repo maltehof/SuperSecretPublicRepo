@@ -6,14 +6,14 @@ public class PlayerControll : MonoBehaviour {
 	public float movementSpeed;
 	public float rotationSpeed;
 
-	//private CircleCollider2D circleCollider;
+	private CircleCollider2D circleCollider;
 	private Gun gun;
 
 	// Use this for initialization
 	void Start () {
 		transform.Rotate ( new Vector3(0,0, 0) );
 		gun = GetComponentInChildren<Gun> ();
-		//circleCollider = GetComponent<CircleCollider2D>();
+		circleCollider = GetComponent<CircleCollider2D>();
 	}
 
 	void Update(){
@@ -42,9 +42,9 @@ public class PlayerControll : MonoBehaviour {
 
 		movementDirection.Normalize ();
 		
-		Vector3 movementVector = movementDirection * movementSpeed * Time.deltaTime;
+		Vector2 movementVector = movementDirection * movementSpeed * Time.deltaTime;
 
-		/*
+
 		float scaledRadius = circleCollider.radius * circleCollider.transform.localScale.x;
 
 		Collider2D[] colliders = Physics2D.OverlapAreaAll(new Vector2(transform.position.x - scaledRadius - movementSpeed * Time.deltaTime,
@@ -65,19 +65,19 @@ public class PlayerControll : MonoBehaviour {
 				if(otherCollider.GetType() == typeof(BoxCollider2D) )
 				{
 					BoxCollider2D boxCollider = otherCollider as BoxCollider2D;
-					
-					Vector2 CornerA = boxCollider.transform.rotation * boxCollider.transform.TransformPoint(new Vector3(boxCollider.offset.x - boxCollider.size.x/2.0f,
+
+					Vector2 CornerA = boxCollider.transform.TransformPoint(boxCollider.transform.rotation * new Vector3(boxCollider.offset.x - boxCollider.size.x/2.0f,
 					                                                                                                    boxCollider.offset.y - boxCollider.size.y/2.0f,
 					                                                                                                    0.0f) );
-					Vector2 CornerB = boxCollider.transform.rotation * boxCollider.transform.TransformPoint(new Vector3(boxCollider.offset.x - boxCollider.size.x/2.0f,
+					Vector2 CornerB = boxCollider.transform.TransformPoint(boxCollider.transform.rotation * new Vector3(boxCollider.offset.x - boxCollider.size.x/2.0f,
 					                                                                                                    boxCollider.offset.y + boxCollider.size.y/2.0f,
 					                                                                                                    0.0f) );
 	
-					Vector2 CornerC = boxCollider.transform.rotation * boxCollider.transform.TransformPoint(new Vector3(boxCollider.offset.x + boxCollider.size.x/2.0f,
+					Vector2 CornerC = boxCollider.transform.TransformPoint(boxCollider.transform.rotation * new Vector3(boxCollider.offset.x + boxCollider.size.x/2.0f,
 					                                                                                                    boxCollider.offset.y + boxCollider.size.y/2.0f,
 					                                                                                                    0.0f) );
 	
-					Vector2 CornerD = boxCollider.transform.rotation * boxCollider.transform.TransformPoint(new Vector3(boxCollider.offset.x + boxCollider.size.x/2.0f,
+					Vector2 CornerD = boxCollider.transform.TransformPoint(boxCollider.transform.rotation * new Vector3(boxCollider.offset.x + boxCollider.size.x/2.0f,
 					                                                                                                    boxCollider.offset.y - boxCollider.size.y/2.0f,
 					                                                                                                    0.0f) );
 	
@@ -167,9 +167,9 @@ public class PlayerControll : MonoBehaviour {
 			Debug.Log("Remaining Movement Vector is " + remainingMovement.x + " / " + remainingMovement.y);
 			movementVector = remainingMovement;
 		}
-		*/
 
-		transform.position += movementVector;
+		Vector3 movementVec3 = movementVector;
+		transform.position += movementVec3;
 
 
 	}
