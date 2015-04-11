@@ -8,15 +8,17 @@ public class EnemyAI : MonoBehaviour {
 	
 	private GameObject player;
 	private Gun gun;
+	private EnemySight enemySight;
 
 	// Use this for initialization
 	void Start () {
 		player = GameObject.Find("Player");
+		enemySight = GetComponent<EnemySight>();
 		gun = GetComponentInChildren<Gun> ();
 	}
 
 	void Update(){
-				gun.Fire ();
+		if (enemySight.playerInSight) gun.Fire ();
 	}
 
 	// Update is called once per frame
