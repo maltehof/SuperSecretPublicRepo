@@ -7,6 +7,7 @@ public class PlayerControll : MonoBehaviour {
 	public float rotationSpeed;
 
 	private CircleCollider2D circleCollider;
+	private CollisionDetector collisionDetector;
 	private Gun gun;
 
 	// Use this for initialization
@@ -14,14 +15,13 @@ public class PlayerControll : MonoBehaviour {
 		transform.Rotate ( new Vector3(0,0, 0) );
 		gun = GetComponentInChildren<Gun> ();
 		circleCollider = GetComponent<CircleCollider2D>();
-	}
-
-	void Update(){
-		if (Input.GetButton ("Fire1"))
-			gun.Fire ();
+		collisionDetector = GetComponent<CollisionDetector>();
 	}
 
 	void FixedUpdate () {
+		if (Input.GetButton ("Fire1"))
+			gun.Fire ();
+
 		Vector3 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
 		Vector3 targetDirection = mousePos - transform.position;
 		targetDirection.z = 0;
@@ -42,136 +42,11 @@ public class PlayerControll : MonoBehaviour {
 
 		movementDirection.Normalize ();
 		
-		Vector2 movementVector = movementDirection * movementSpeed * Time.deltaTime;
+		Vector2 requestedMovement = movementDirection * movementSpeed * Time.deltaTime;
 
+		Vector3 movement = collisionDetector.RequestMovement (transform.position, requestedMovement, circleCollider);
 
-		float scaledRadius = circleCollider.radius * circleCollider.transform.localScale.x;
-
-		Collider2D[] colliders = Physics2D.OverlapAreaAll(new Vector2(transform.position.x - scaledRadius - movementSpeed * Time.deltaTime,
-		                                                              transform.position.y + scaledRadius + movementSpeed * Time.deltaTime),
-		                                                  new Vector2(transform.position.x + scaledRadius + movementSpeed * Time.deltaTime,
-		                                                              transform.position.y - scaledRadius - movementSpeed * Time.deltaTime));
-		
-
-		for(int i = 0;
-		    i < 4 && movementVector != Vector2.zero;
-		    ++i)
-		{
-			float fractionTillCollision = -1.0f;
-			Vector2 remainingMovement = Vector2.zero;
-			
-			foreach(Collider2D otherCollider in colliders)
-			{
-				if(otherCollider.GetType() == typeof(BoxCollider2D) )
-				{
-					BoxCollider2D boxCollider = otherCollider as BoxCollider2D;
-
-					Vector2 CornerA = boxCollider.transform.TransformPoint(boxCollider.transform.rotation * new Vector3(boxCollider.offset.x - boxCollider.size.x/2.0f,
-					                                                                                                    boxCollider.offset.y - boxCollider.size.y/2.0f,
-					                                                                                                    0.0f) );
-					Vector2 CornerB = boxCollider.transform.TransformPoint(boxCollider.transform.rotation * new Vector3(boxCollider.offset.x - boxCollider.size.x/2.0f,
-					                                                                                                    boxCollider.offset.y + boxCollider.size.y/2.0f,
-					                                                                                                    0.0f) );
-	
-					Vector2 CornerC = boxCollider.transform.TransformPoint(boxCollider.transform.rotation * new Vector3(boxCollider.offset.x + boxCollider.size.x/2.0f,
-					                                                                                                    boxCollider.offset.y + boxCollider.size.y/2.0f,
-					                                                                                                    0.0f) );
-	
-					Vector2 CornerD = boxCollider.transform.TransformPoint(boxCollider.transform.rotation * new Vector3(boxCollider.offset.x + boxCollider.size.x/2.0f,
-					                                                                                                    boxCollider.offset.y - boxCollider.size.y/2.0f,
-					                                                                                                    0.0f) );
-	
-					Vector2 lineStartAB = CornerA + (CornerA - CornerD).normalized * scaledRadius;
-					Vector2 lineEndAB   = CornerB + (CornerB - CornerC).normalized * scaledRadius;
-	
-					Vector2 lineStartBC = CornerB + (CornerB - CornerA).normalized * scaledRadius;
-					Vector2 lineEndBC   = CornerC + (CornerC - CornerD).normalized * scaledRadius;
-	
-					Vector2 lineStartCD = CornerC + (CornerC - CornerB).normalized * scaledRadius;
-					Vector2 lineEndCD   = CornerD + (CornerD - CornerA).normalized * scaledRadius;
-	
-					Vector2 lineStartDA = CornerD + (CornerD - CornerC).normalized * scaledRadius;
-					Vector2 lineEndDA   = CornerA + (CornerA - CornerB).normalized * scaledRadius;
-	
-					Vector2 tempRemainingMovement = Vector2.zero;
-					float tempFraction = LinearAlgebra.CollideWithLine(lineStartAB, lineEndAB, transform.position, movementVector, ref tempRemainingMovement);
-					if(tempFraction > 0 && tempFraction < 1)
-					{
-						fractionTillCollision = tempFraction;
-						remainingMovement = tempRemainingMovement;
-					}
-	
-					tempFraction = LinearAlgebra.CollideWithLine(lineStartBC, lineEndBC, transform.position, movementVector, ref tempRemainingMovement);
-					if(tempFraction > 0 && (fractionTillCollision < 0 || tempFraction < fractionTillCollision ) )
-					{
-						fractionTillCollision = tempFraction;
-						remainingMovement = tempRemainingMovement;
-					}
-						
-	
-					tempFraction = LinearAlgebra.CollideWithLine(lineStartCD, lineEndCD, transform.position, movementVector, ref tempRemainingMovement);
-					if(tempFraction > 0 && (fractionTillCollision < 0 || tempFraction < fractionTillCollision ) )
-					{
-							fractionTillCollision = tempFraction;
-							remainingMovement = tempRemainingMovement;
-						}
-						
-					tempFraction = LinearAlgebra.CollideWithLine(lineStartDA, lineEndDA, transform.position, movementVector, ref tempRemainingMovement);
-					if(tempFraction > 0 && (fractionTillCollision < 0 || tempFraction < fractionTillCollision ) )
-					{
-						fractionTillCollision = tempFraction;
-						remainingMovement = tempRemainingMovement;
-					}
-					
-					tempFraction = LinearAlgebra.CollideWithCircle(CornerA, scaledRadius, this.transform.position, movementVector, ref tempRemainingMovement);
-					if(tempFraction > 0 && (fractionTillCollision < 0 || tempFraction < fractionTillCollision ) )
-					{
-						fractionTillCollision = tempFraction;
-						remainingMovement = tempRemainingMovement;
-					}
-					
-					tempFraction = LinearAlgebra.CollideWithCircle(CornerB, scaledRadius, this.transform.position, movementVector, ref tempRemainingMovement);
-					if(tempFraction > 0 && (fractionTillCollision < 0 || tempFraction < fractionTillCollision ) )
-					{
-						fractionTillCollision = tempFraction;
-						remainingMovement = tempRemainingMovement;
-					}
-					
-					tempFraction = LinearAlgebra.CollideWithCircle(CornerC, scaledRadius, this.transform.position, movementVector, ref tempRemainingMovement);
-					if(tempFraction > 0 && (fractionTillCollision < 0 || tempFraction < fractionTillCollision ) )
-					{
-						fractionTillCollision = tempFraction;
-						remainingMovement = tempRemainingMovement;
-					}
-					
-					tempFraction = LinearAlgebra.CollideWithCircle(CornerD, scaledRadius, this.transform.position, movementVector, ref tempRemainingMovement);
-					if(tempFraction > 0 && (fractionTillCollision < 0 || tempFraction < fractionTillCollision ) )
-					{
-						fractionTillCollision = tempFraction;
-						remainingMovement = tempRemainingMovement;
-					}
-				}
-			}
-			if(fractionTillCollision > 0 && fractionTillCollision < 1)
-			{
-				movementVector = fractionTillCollision * movementVector - 0.1f * movementVector;
-				Vector3 move = movementVector;
-				transform.position += move;
-				Debug.Log("Stop it right there!");
-			}
-			else{
-				Vector3 move = movementVector;
-				transform.position += move;
-			}
-			
-			Debug.Log("Remaining Movement Vector is " + remainingMovement.x + " / " + remainingMovement.y);
-			movementVector = remainingMovement;
-		}
-
-		Vector3 movementVec3 = movementVector;
-		transform.position += movementVec3;
-
-
+		transform.position += movement;
 	}
 	
 }

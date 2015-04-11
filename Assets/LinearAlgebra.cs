@@ -2,10 +2,10 @@
 
 public static class LinearAlgebra{
 
-	static public float CollideWithLine(Vector2 lineStart, Vector2 lineEnd, Vector2 startPosition, Vector2 movementVector, ref Vector2 remainingMovement)
+	static public float CollideWithLine(Vector2 lineStart, Vector2 lineEnd, Vector2 startPosition, Vector2 movementVector, ref Vector2 normal)
 	{
 		float endPointFraction = -1.0f;
-		remainingMovement = Vector2.zero;
+		normal = Vector2.zero;
 		
 		Vector2 lineDir = (lineEnd - lineStart).normalized;
 
@@ -26,8 +26,13 @@ public static class LinearAlgebra{
 				endPointFraction = (lineStart.x + lineDist*lineDir.x - startPosition.x)/movementVector.x;
 				if(endPointFraction < 1)
 				{
-					remainingMovement = movementVector * (1-endPointFraction);
-					remainingMovement = Vector2.Dot(remainingMovement, lineDir) * lineDir;
+					if(lineDir.y != 0)
+					{
+						normal = new Vector2(1.0f, - lineDir.x/lineDir.y);
+						normal.Normalize();
+					}
+					else
+						normal = new Vector2(0.0f, 1.0f);
 				}
 			}
 		}
@@ -48,8 +53,13 @@ public static class LinearAlgebra{
 				endPointFraction = (lineStart.y + lineDist*lineDir.y - startPosition.y)/movementVector.y;
 				if(endPointFraction < 1)
 				{
-					remainingMovement = movementVector * (1-endPointFraction);
-					remainingMovement = Vector2.Dot(remainingMovement, lineDir) * lineDir;
+					if(lineDir.y != 0)
+					{
+						normal = new Vector2(1.0f, - lineDir.x/lineDir.y);
+						normal.Normalize();
+					}
+					else
+						normal = new Vector2(0.0f, 1.0f);
 				}
 			}
 		}
@@ -59,7 +69,7 @@ public static class LinearAlgebra{
 		return endPointFraction;
 	}
 
-	static public float CollideWithCircle(Vector2 center, float radius, Vector2 startPosition, Vector2 movementVector, ref Vector2 remainingMovement)
+	static public float CollideWithCircle(Vector2 center, float radius, Vector2 startPosition, Vector2 movementVector, ref Vector2 normal)
 	{
 		if(movementVector.x == 0)
 		{
@@ -97,26 +107,16 @@ public static class LinearAlgebra{
 				
 				if(endPointFractionOne < endPointFractionTwo && endPointFractionOne > 0 && endPointFractionOne < 1)
 				{
-					remainingMovement = movementVector * (1-endPointFractionOne);
-					
 					Vector2 endPoint = startPosition + endPointFractionOne*movementVector;
-					Vector2 radiusVec = center - endPoint;
-					Vector2 radiusVecOrth = new Vector2(1.0f, - radiusVec.x/radiusVec.y).normalized;
-					
-					remainingMovement = Vector2.Dot(remainingMovement, radiusVecOrth) * radiusVecOrth;
-					
+					normal = center - endPoint;
+					normal.Normalize();
 					return endPointFractionOne;
 				}
 				else if(endPointFractionTwo > 0 && endPointFractionTwo < 1)
 				{
-					remainingMovement = movementVector * (1-endPointFractionTwo);
-					
 					Vector2 endPoint = startPosition + endPointFractionTwo*movementVector;
-					Vector2 radiusVec = center - endPoint;
-					Vector2 radiusVecOrth = new Vector2(1.0f, - radiusVec.x/radiusVec.y).normalized;
-					
-					remainingMovement = Vector2.Dot(remainingMovement, radiusVecOrth) * radiusVecOrth;
-					
+					normal = center - endPoint;
+					normal.Normalize();
 					return endPointFractionTwo;
 				}
 			}
