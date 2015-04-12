@@ -23,9 +23,7 @@ public class Gun : MonoBehaviour {
 	{
 		if(timeScinceLastFire >= fireDelay){
 			Bullet bullet = Instantiate (originalBullet, transform.position, transform.parent.rotation) as Bullet;
-			bullet.Initialize();
 			Vector2 fireDirection = transform.parent.rotation * new Vector2 (0, 1);
-			//Vector2 bulletForce = fireDirection * fireForce;
 			bullet.Fire(fireDirection);
 			timeScinceLastFire = 0.0f;
 		}

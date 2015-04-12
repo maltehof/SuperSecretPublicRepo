@@ -24,16 +24,13 @@ public static class LinearAlgebra{
 			if(lineDist <= maxDist && lineDist >= 0.0f)
 			{
 				endPointFraction = (lineStart.x + lineDist*lineDir.x - startPosition.x)/movementVector.x;
-				if(endPointFraction < 1)
+				if(lineDir.y != 0)
 				{
-					if(lineDir.y != 0)
-					{
-						normal = new Vector2(1.0f, - lineDir.x/lineDir.y);
-						normal.Normalize();
-					}
-					else
-						normal = new Vector2(0.0f, 1.0f);
+					normal = new Vector2(1.0f, - lineDir.x/lineDir.y);
+					normal.Normalize();
 				}
+				else
+					normal = new Vector2(0.0f, 1.0f);
 			}
 		}
 		else if(movementVector.y != 0.0f)
@@ -51,16 +48,15 @@ public static class LinearAlgebra{
 			if(lineDist <= maxDist && lineDist >= 0.0f)
 			{
 				endPointFraction = (lineStart.y + lineDist*lineDir.y - startPosition.y)/movementVector.y;
-				if(endPointFraction < 1)
+
+				if(lineDir.y != 0)
 				{
-					if(lineDir.y != 0)
-					{
-						normal = new Vector2(1.0f, - lineDir.x/lineDir.y);
-						normal.Normalize();
-					}
-					else
-						normal = new Vector2(0.0f, 1.0f);
+					normal = new Vector2(1.0f, - lineDir.x/lineDir.y);
+					normal.Normalize();
 				}
+				else
+					normal = new Vector2(0.0f, 1.0f);
+				
 			}
 		}
 		else
@@ -71,6 +67,7 @@ public static class LinearAlgebra{
 
 	static public float CollideWithCircle(Vector2 center, float radius, Vector2 startPosition, Vector2 movementVector, ref Vector2 normal)
 	{
+        bool mirroredCircleCollision = false;
 		if(movementVector.x == 0)
 		{
 			float temp = movementVector.x;
@@ -84,6 +81,8 @@ public static class LinearAlgebra{
 			temp = center.x;
 			center.x = center.y;
 			center.y = temp;
+
+            mirroredCircleCollision = true;
 		}
 		if(movementVector.x != 0)
 		{
@@ -105,18 +104,34 @@ public static class LinearAlgebra{
 				float endPointTwoX = - p/2.0f - Mathf.Sqrt(rootSquared);
 				float endPointFractionTwo = (endPointTwoX - startPosition.x)/movementVector.x;
 				
-				if(endPointFractionOne < endPointFractionTwo && endPointFractionOne > 0 && endPointFractionOne < 1)
+				if(endPointFractionOne < endPointFractionTwo && endPointFractionOne >= 0)
 				{
 					Vector2 endPoint = startPosition + endPointFractionOne*movementVector;
-					normal = center - endPoint;
+                    normal = endPoint - center;
 					normal.Normalize();
+
+                    if (mirroredCircleCollision)
+                    {
+                        float temp = normal.x;
+                        normal.x = normal.y;
+                        normal.y = temp;
+                    }
+
 					return endPointFractionOne;
 				}
-				else if(endPointFractionTwo > 0 && endPointFractionTwo < 1)
+				else if(endPointFractionTwo >= 0)
 				{
 					Vector2 endPoint = startPosition + endPointFractionTwo*movementVector;
-					normal = center - endPoint;
+					normal = endPoint - center;
 					normal.Normalize();
+
+                    if (mirroredCircleCollision)
+                    {
+                        float temp = normal.x;
+                        normal.x = normal.y;
+                        normal.y = temp;
+                    }
+
 					return endPointFractionTwo;
 				}
 			}

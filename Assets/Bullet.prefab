@@ -10,8 +10,8 @@ GameObject:
   - 4: {fileID: 444166}
   - 212: {fileID: 21244166}
   - 114: {fileID: 11444166}
-  - 50: {fileID: 5040134}
   - 58: {fileID: 5855572}
+  - 114: {fileID: 11467008}
   m_Layer: 0
   m_Name: Bullet
   m_TagString: Untagged
@@ -31,21 +31,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
---- !u!50 &5040134
-Rigidbody2D:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 144166}
-  m_Mass: 1
-  m_LinearDrag: 0
-  m_AngularDrag: .0500000007
-  m_GravityScale: 0
-  m_FixedAngle: 0
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 1
 --- !u!58 &5855572
 CircleCollider2D:
   m_ObjectHideFlags: 1
@@ -70,9 +55,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebd89bc464c1398439fa345a14eef720, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bulletRigidbody: {fileID: 0}
   movementSpeed: 5
   maxBounces: 2
+--- !u!114 &11467008
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 144166}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25322f0c815c67c4aa7d31399704ed8b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!212 &21244166
 SpriteRenderer:
   m_ObjectHideFlags: 1

@@ -14,10 +14,10 @@ public class CollisionDetector : MonoBehaviour {
 		Collider2D returnCollider = null;
 		float scaledRadius = circleCollider.radius * circleCollider.transform.localScale.x;
 		
-		Collider2D[] colliders = Physics2D.OverlapAreaAll (new Vector2 (transform.position.x - scaledRadius - Mathf.Abs (requestedMovement.x),
-		                                                              transform.position.y + scaledRadius + Mathf.Abs (requestedMovement.y)),
-														  new Vector2 (transform.position.x + scaledRadius + Mathf.Abs (requestedMovement.x),
-		                                                              transform.position.y - scaledRadius - Mathf.Abs (requestedMovement.y)));
+		Collider2D[] colliders = Physics2D.OverlapAreaAll (new Vector2(transform.position.x - (scaledRadius + Mathf.Abs (requestedMovement.x) ) * 2.0f,
+                                                                      transform.position.y + (scaledRadius + Mathf.Abs(requestedMovement.y) ) * 2.0f),
+                                                          new Vector2(transform.position.x + (scaledRadius + Mathf.Abs(requestedMovement.x) ) * 2.0f,
+                                                                      transform.position.y - (scaledRadius + Mathf.Abs(requestedMovement.y) ) * 2.0f) );
 		
 
 		float fractionTillCollision = -1.0f;
@@ -113,13 +113,13 @@ public class CollisionDetector : MonoBehaviour {
 				}
 			}
 		}
-		if (fractionTillCollision >= 0 && fractionTillCollision < 1) 
+		if (fractionTillCollision > 0 && fractionTillCollision <= 1) 
 		{
-			//TODO: Check if there is a better way then to use an -epsilon * requestedMovement to not go into walls.
 			requestedMovement = fractionTillCollision * requestedMovement;
 			collisionAttributes = new CollisionAttributes();
+
 			collisionAttributes.collisionPoint = position + requestedMovement;
-			collisionAttributes.normal = normal;
+            collisionAttributes.normal = normal;
 		} 
 		else
 		{
@@ -133,51 +133,66 @@ public class CollisionDetector : MonoBehaviour {
 	public Vector2 RequestMovement(Vector2 position, Vector2 remainingMovement, CircleCollider2D circleCollider)
 	{
 		Vector2 allowedMovement = Vector2.zero;
+        Vector2 requestedDirection = remainingMovement;
+        requestedDirection.Normalize();
 
 		for (int i = 0;
 		     i < 4 && remainingMovement != Vector2.zero;
 		     ++i) 
 		{
-			//For DEBUG
+			#if UNITY_EDITOR
 			float scaledRadius = circleCollider.radius * circleCollider.transform.localScale.x;
 			Collider2D[] colliders = Physics2D.OverlapAreaAll (new Vector2 (transform.position.x - scaledRadius - Mathf.Abs (remainingMovement.x),
 			                                                                transform.position.y + scaledRadius + Mathf.Abs (remainingMovement.y)),
 			                                                   new Vector2 (transform.position.x + scaledRadius + Mathf.Abs (remainingMovement.x),
 			            												    transform.position.y - scaledRadius - Mathf.Abs (remainingMovement.y)));
-			//END For DEBUG
-			CollisionAttributes nextCollision = null;
+            #endif
+
+            CollisionAttributes nextCollision = null;
 			GetNextCollision(position, remainingMovement, circleCollider, ref nextCollision);
 
 			if(nextCollision == null)
 			{
 				allowedMovement += remainingMovement;
-				remainingMovement = Vector2.zero;
+
+                #if UNITY_EDITOR
 				foreach (Collider2D otherCollider in colliders) {
 					if (otherCollider.GetType () == typeof(BoxCollider2D) && otherCollider.OverlapPoint(position)) {
 						Debug.Log("Happened in Full Move on iteration Number" + i);
+                        Debug.Log("Remaining Movement was: " + remainingMovement.x + " " + remainingMovement.y);
 					}
 				}
-				//Debug.Log("Call to Full Method No. " + i);
+                #endif 
+
+                remainingMovement = Vector2.zero; 
 			}
 			else
 			{
 				Vector2 movementToCollisionPoint = nextCollision.collisionPoint - position;
+                Vector2 movementToStopPosition = movementToCollisionPoint * ((movementToCollisionPoint.magnitude - 0.001f) / movementToCollisionPoint.magnitude);
 
-				allowedMovement += movementToCollisionPoint;
-				position += movementToCollisionPoint;
+                if (Vector2.Dot(movementToStopPosition, remainingMovement) < 0.001)
+                    movementToStopPosition = Vector2.zero;
 
+				allowedMovement += movementToStopPosition;
+                position += movementToStopPosition;
+
+                #if UNITY_EDITOR
 				foreach (Collider2D otherCollider in colliders) {
 					if (otherCollider.GetType () == typeof(BoxCollider2D) && otherCollider.OverlapPoint(position)) {
 						Debug.Log("Happened in Fraction Move on iteration Number" + i);
+                        Debug.Log("Movement to Stop Position was: " + movementToStopPosition.x + " " + movementToStopPosition.y);
 					}
 				}
+                #endif 
 
-				remainingMovement = remainingMovement - remainingMovement*((movementToCollisionPoint.magnitude*1.1f)/remainingMovement.magnitude);
+			    remainingMovement -= movementToStopPosition;
 
-				remainingMovement = remainingMovement - Vector2.Dot(remainingMovement, nextCollision.normal) * nextCollision.normal;
+                remainingMovement = remainingMovement - Vector2.Dot(remainingMovement, nextCollision.normal) * nextCollision.normal;
 
-				//Debug.Log("Call to Fraction Method No. " + i);
-			}
+                if (Vector2.Dot(remainingMovement, requestedDirection) < 0)
+                    remainingMovement = Vector2.zero;
+            }
 		}
 
 		return allowedMovement;
