@@ -14,10 +14,10 @@ public class CollisionDetector : MonoBehaviour {
 		Collider2D returnCollider = null;
 		float scaledRadius = circleCollider.radius * circleCollider.transform.localScale.x;
 		
-		Collider2D[] colliders = Physics2D.OverlapAreaAll (new Vector2(transform.position.x - (scaledRadius + Mathf.Abs (requestedMovement.x) ) * 2.0f,
-                                                                      transform.position.y + (scaledRadius + Mathf.Abs(requestedMovement.y) ) * 2.0f),
-                                                          new Vector2(transform.position.x + (scaledRadius + Mathf.Abs(requestedMovement.x) ) * 2.0f,
-                                                                      transform.position.y - (scaledRadius + Mathf.Abs(requestedMovement.y) ) * 2.0f) );
+		Collider2D[] colliders = Physics2D.OverlapAreaAll (new Vector2(transform.position.x - (scaledRadius + Mathf.Abs (requestedMovement.x) ) * 4.0f,
+                                                                      transform.position.y + (scaledRadius + Mathf.Abs(requestedMovement.y) ) * 4.0f),
+                                                          new Vector2(transform.position.x + (scaledRadius + Mathf.Abs(requestedMovement.x) ) * 4.0f,
+                                                                      transform.position.y - (scaledRadius + Mathf.Abs(requestedMovement.y) ) * 4.0f) );
 		
 
 		float fractionTillCollision = -1.0f;
@@ -112,20 +112,34 @@ public class CollisionDetector : MonoBehaviour {
 					normal = tempNormal;
 				}
 			}
+            else if (otherCollider.GetType() == typeof(CircleCollider2D) && otherCollider.gameObject != circleCollider.gameObject)
+            {
+                CircleCollider2D otherCircleCollider = otherCollider as CircleCollider2D;
+
+                float scaledRadiusOtherCollider = otherCircleCollider.radius * otherCircleCollider.transform.localScale.x;
+                Vector2 otherCircleColliderPos = otherCircleCollider.transform.position;
+                Vector2 tempNormal = Vector2.zero;
+                float tempFraction = LinearAlgebra.CollideWithCircle(otherCircleColliderPos, (scaledRadius + scaledRadiusOtherCollider), position, requestedMovement, ref tempNormal);
+                if (tempFraction >= 0 && (fractionTillCollision < 0 || tempFraction < fractionTillCollision))
+                {
+                    fractionTillCollision = tempFraction;
+                    returnCollider = otherCollider;
+                    normal = tempNormal;
+                }
+            }
 		}
-		if (fractionTillCollision > 0 && fractionTillCollision <= 1) 
+		if (fractionTillCollision >= 0 && fractionTillCollision <= 1) 
 		{
 			requestedMovement = fractionTillCollision * requestedMovement;
 			collisionAttributes = new CollisionAttributes();
 
 			collisionAttributes.collisionPoint = position + requestedMovement;
             collisionAttributes.normal = normal;
-		} 
+        } 
 		else
 		{
 			collisionAttributes = null;
 		}
-		
 
 		return returnCollider;
 	}

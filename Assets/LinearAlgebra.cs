@@ -68,7 +68,7 @@ public static class LinearAlgebra{
 	static public float CollideWithCircle(Vector2 center, float radius, Vector2 startPosition, Vector2 movementVector, ref Vector2 normal)
 	{
         bool mirroredCircleCollision = false;
-		if(movementVector.x == 0)
+        if (Mathf.Abs(movementVector.x) < Mathf.Abs(movementVector.y) )
 		{
 			float temp = movementVector.x;
 			movementVector.x = movementVector.y;
@@ -84,31 +84,31 @@ public static class LinearAlgebra{
 
             mirroredCircleCollision = true;
 		}
-		if(movementVector.x != 0)
-		{
-			float velocitySlope = movementVector.y/movementVector.x;
-			float distanceToCenterY = startPosition.y - center.y;
-			float D = distanceToCenterY - velocitySlope*startPosition.x;
-			
-			float p = 2*(D*velocitySlope - center.x)/(MyMath.Square(velocitySlope) + 1);
-			float q = (MyMath.Square(D) - MyMath.Square(radius) + MyMath.Square(center.x))/(MyMath.Square(velocitySlope) + 1);
-			
-			float rootSquared = MyMath.Square(p/2.0f) - q;
-			if(rootSquared < 0)
-				return -1.0f;
-			else
-			{
-				float endPointOneX = - p/2.0f + Mathf.Sqrt(rootSquared);
-				float endPointFractionOne = (endPointOneX - startPosition.x)/movementVector.x;
-			
-				float endPointTwoX = - p/2.0f - Mathf.Sqrt(rootSquared);
-				float endPointFractionTwo = (endPointTwoX - startPosition.x)/movementVector.x;
-				
-				if(endPointFractionOne < endPointFractionTwo && endPointFractionOne >= 0)
-				{
-					Vector2 endPoint = startPosition + endPointFractionOne*movementVector;
+        if (movementVector.x != 0)
+        {
+            float velocitySlope = movementVector.y / movementVector.x;
+            float distanceToCenterY = startPosition.y - center.y;
+            float D = distanceToCenterY - velocitySlope * startPosition.x;
+
+            float p = 2 * (D * velocitySlope - center.x) / (MyMath.Square(velocitySlope) + 1);
+            float q = (MyMath.Square(D) - MyMath.Square(radius) + MyMath.Square(center.x)) / (MyMath.Square(velocitySlope) + 1);
+
+            float rootSquared = MyMath.Square(p / 2.0f) - q;
+            if (rootSquared < 0)
+                return -1.0f;
+            else
+            {
+                float endPointOneX = -p / 2.0f + Mathf.Sqrt(rootSquared);
+                float endPointFractionOne = (endPointOneX - startPosition.x) / movementVector.x;
+
+                float endPointTwoX = -p / 2.0f - Mathf.Sqrt(rootSquared);
+                float endPointFractionTwo = (endPointTwoX - startPosition.x) / movementVector.x;
+
+                if (endPointFractionOne < endPointFractionTwo && endPointFractionOne >= 0)
+                {
+                    Vector2 endPoint = startPosition + endPointFractionOne * movementVector;
                     normal = endPoint - center;
-					normal.Normalize();
+                    normal.Normalize();
 
                     if (mirroredCircleCollision)
                     {
@@ -117,13 +117,13 @@ public static class LinearAlgebra{
                         normal.y = temp;
                     }
 
-					return endPointFractionOne;
-				}
-				else if(endPointFractionTwo >= 0)
-				{
-					Vector2 endPoint = startPosition + endPointFractionTwo*movementVector;
-					normal = endPoint - center;
-					normal.Normalize();
+                    return endPointFractionOne;
+                }
+                else if (endPointFractionTwo >= 0)
+                {
+                    Vector2 endPoint = startPosition + endPointFractionTwo * movementVector;
+                    normal = endPoint - center;
+                    normal.Normalize();
 
                     if (mirroredCircleCollision)
                     {
@@ -132,10 +132,12 @@ public static class LinearAlgebra{
                         normal.y = temp;
                     }
 
-					return endPointFractionTwo;
-				}
-			}
-		}
+                    return endPointFractionTwo;
+                }
+            }
+        }
+        else
+            Debug.Log("Called Collide Circle without movementspeed!");
 		
 		return -1.0f;
 	}

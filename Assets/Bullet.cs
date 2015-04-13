@@ -17,7 +17,6 @@ public class Bullet : MonoBehaviour {
     }
 	
 	void Update(){
-
         Vector2 position = transform.position;
 		Vector2 requestedMovement = movementDirection * movementSpeed * Time.deltaTime;
 
@@ -41,24 +40,41 @@ public class Bullet : MonoBehaviour {
         
         while (collisionAttributes != null)
         {
-			if(bounceCount == maxBounces)
-				DestroyObject(this.gameObject);
-            position = transform.position;
+            if (bounceCount == maxBounces)
+            {
+                DestroyObject(this.gameObject);
+                break;
+            }
             Vector2 movementToCollisionPoint = collisionAttributes.collisionPoint - position;
+
+            if (Vector2.Dot(movementToCollisionPoint, requestedMovement) <= 0)
+                Debug.Log("NO! This can never happen!");
+
 			Vector2 movementToStopPosition = movementToCollisionPoint * ((movementToCollisionPoint.magnitude - 0.001f) / movementToCollisionPoint.magnitude);
 			Vector3 movementToStopPoint3D = movementToStopPosition;
 
-			requestedMovement -= movementToStopPosition;
+            if (Vector2.Dot(movementToStopPosition, requestedMovement) < 0.001)
+            {
+                movementToStopPoint3D = Vector3.zero;
+                movementToStopPosition = Vector2.zero;
+            }
+
+
+            requestedMovement -= movementToStopPosition;
 			transform.position += movementToStopPoint3D;
+
 
             requestedMovement = requestedMovement - 2 * Vector2.Dot(requestedMovement, collisionAttributes.normal) * collisionAttributes.normal;
 			movementDirection = movementDirection - 2 * Vector2.Dot(movementDirection, collisionAttributes.normal) * collisionAttributes.normal;
 			movementDirection.Normalize();
 			bounceCount++;
-			otherCollider = collisionDetector.GetNextCollision(transform.position, requestedMovement, circleCollider, ref collisionAttributes);
+        
+            position = transform.position;
+			otherCollider = collisionDetector.GetNextCollision(position, requestedMovement, circleCollider, ref collisionAttributes);
         }
+
         Vector3 movement = requestedMovement;
-       
+
         transform.position += movement;
 	}
 
