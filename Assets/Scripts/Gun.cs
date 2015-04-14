@@ -25,6 +25,7 @@ public class Gun : MonoBehaviour {
 			Bullet bullet = Instantiate (originalBullet, transform.position, transform.parent.rotation) as Bullet;
 			Vector2 fireDirection = transform.parent.rotation * new Vector2 (0, 1);
 			bullet.Fire(fireDirection);
+			//Debug.Log("Bullet firerd in direction: " + fireDirection.x + "  " + fireDirection.y);
 			timeScinceLastFire = 0.0f;
 		}
 	}	

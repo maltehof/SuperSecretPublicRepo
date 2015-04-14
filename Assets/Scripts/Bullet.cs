@@ -19,7 +19,7 @@ public class Bullet : MonoBehaviour {
 	void Update(){
         Vector2 position = transform.position;
 		Vector2 requestedMovement = movementDirection * movementSpeed * Time.deltaTime;
-
+		//Debug.Log("Requested Movement in direction: " + movementDirection.x + "  " + movementDirection.y);
         CollisionAttributes collisionAttributes = null;
 		Collider2D otherCollider = null;
         
@@ -82,7 +82,9 @@ public class Bullet : MonoBehaviour {
 	public void Fire(Vector2 direction)
 	{
 		movementDirection = direction;
-		direction.Normalize();
+		movementDirection.Normalize();
+		//Debug.Log("Bullet firerd in direction: " + movementDirection.x + "  " + movementDirection.y);
+
 	}
 
 }
