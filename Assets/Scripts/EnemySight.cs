@@ -14,16 +14,20 @@ public class EnemySight : MonoBehaviour {
 
 		//Variables initialization
 		playerInSight = false;
-		sightCol = GetComponent<CircleCollider2D>();
+		//Searches for a isTrigger circle collider used as enemy sight
+		foreach (var component in GetComponents<CircleCollider2D>()) {
+			if (component.isTrigger) 
+				sightCol = (CircleCollider2D) component;
+		}
 		player = GameObject.Find("Player");
 
 		//LayerMask Definition
 		layerMask = 0;
 		int playerLayer = 1 << 8;
 		int propLayer = 1 << 10;
-		int backgroundLayer = 1 << 11;
+		int wallLayer = 1 << 12;
 
-		layerMask = playerLayer | propLayer | backgroundLayer;
+		layerMask = playerLayer | propLayer | wallLayer;
 
 	}
 
