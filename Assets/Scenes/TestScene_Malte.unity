@@ -170,7 +170,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c5e9a891a51ce747bcc7f87da6eb215, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyPrefab: {fileID: 192526, guid: 449a75b0fa393490e8132be239140fd8, type: 2}
+  enemyPrefab: {fileID: 181034, guid: 449a75b0fa393490e8132be239140fd8, type: 2}
   timeBetweenSpawns: 5
 --- !u!212 &287106891
 SpriteRenderer:
