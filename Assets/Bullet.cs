@@ -8,6 +8,7 @@ public class Bullet : MonoBehaviour {
     private CircleCollider2D    circleCollider;
 	private int                 bounceCount;
     private CollisionDetector   collisionDetector;
+    private bool                destroyNextFrame;
 
 	// Use this for initialization
 	void Start () {
@@ -17,34 +18,35 @@ public class Bullet : MonoBehaviour {
     }
 	
 	void Update(){
+
         Vector2 position = transform.position;
 		Vector2 requestedMovement = movementDirection * movementSpeed * Time.deltaTime;
 
         CollisionAttributes collisionAttributes = null;
-		Collider2D otherCollider = null;
-        
-        otherCollider = collisionDetector.GetNextCollision(position, requestedMovement, circleCollider, ref collisionAttributes);
 
-        Destructible otherDestructible = null;
-        if(otherCollider != null)
-            otherDestructible = otherCollider.GetComponent<Destructible>();
-
-        if (otherDestructible != null)        //TODO: Exclude firing entity if bounceCount = 0
-        {
-            otherDestructible.health -= 10;
-            if (otherDestructible.health <= 0)
-                DestroyObject(otherDestructible.gameObject);
-
-            DestroyObject(this.gameObject);
-        }
+        collisionAttributes = collisionDetector.GetNextCollision(position, requestedMovement, circleCollider);
         
         while (collisionAttributes != null)
         {
-            if (bounceCount == maxBounces)
+            Destructible otherDestructible = null;
+            if (collisionAttributes.otherCollider != null)
+                otherDestructible = collisionAttributes.otherCollider.GetComponent<Destructible>();
+
+            if (otherDestructible != null)        //TODO: Exclude firing entity if bounceCount = 0
             {
-                DestroyObject(this.gameObject);
+                otherDestructible.health -= 10;
+                if (otherDestructible.health <= 0)
+                    DestroyObject(otherDestructible.gameObject);
+
+                Destroy(this.gameObject);
                 break;
             }
+            if (bounceCount == maxBounces)
+            {
+                Destroy(this.gameObject);
+                break;
+            }
+            
             Vector2 movementToCollisionPoint = collisionAttributes.collisionPoint - position;
 
             if (Vector2.Dot(movementToCollisionPoint, requestedMovement) <= 0)
@@ -70,7 +72,7 @@ public class Bullet : MonoBehaviour {
 			bounceCount++;
         
             position = transform.position;
-			otherCollider = collisionDetector.GetNextCollision(position, requestedMovement, circleCollider, ref collisionAttributes);
+			collisionAttributes = collisionDetector.GetNextCollision(position, requestedMovement, circleCollider);
         }
 
         Vector3 movement = requestedMovement;

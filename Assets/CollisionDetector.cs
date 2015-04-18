@@ -3,15 +3,17 @@ using System.Collections;
 
 public class CollisionAttributes
 {
-	public Vector2 collisionPoint;
-	public Vector2 normal;
+    public Collider2D  otherCollider;
+	public Vector2     collisionPoint;
+	public Vector2     normal;
 };
 
 public class CollisionDetector : MonoBehaviour {
 
-	public Collider2D GetNextCollision(Vector2 position, Vector2 requestedMovement, CircleCollider2D circleCollider, ref CollisionAttributes collisionAttributes)
+	public CollisionAttributes GetNextCollision(Vector2 position, Vector2 requestedMovement, CircleCollider2D circleCollider)
 	{
-		Collider2D returnCollider = null;
+        CollisionAttributes returnCollisionAttributes = null;
+
 		float scaledRadius = circleCollider.radius * circleCollider.transform.localScale.x;
 		
 		Collider2D[] colliders = Physics2D.OverlapAreaAll (new Vector2(transform.position.x - (scaledRadius + Mathf.Abs (requestedMovement.x) ) * 4.0f,
@@ -22,8 +24,12 @@ public class CollisionDetector : MonoBehaviour {
 
 		float fractionTillCollision = -1.0f;
 		Vector2 normal = Vector2.zero;
+        Collider2D returnCollider = null;
 			
 		foreach (Collider2D otherCollider in colliders) {
+            if (otherCollider.isTrigger == true)
+                continue;
+
 			if (otherCollider.GetType () == typeof(BoxCollider2D)) {
 				BoxCollider2D boxCollider = otherCollider as BoxCollider2D;
 					
@@ -131,17 +137,14 @@ public class CollisionDetector : MonoBehaviour {
 		if (fractionTillCollision >= 0 && fractionTillCollision <= 1) 
 		{
 			requestedMovement = fractionTillCollision * requestedMovement;
-			collisionAttributes = new CollisionAttributes();
+            returnCollisionAttributes = new CollisionAttributes();
 
-			collisionAttributes.collisionPoint = position + requestedMovement;
-            collisionAttributes.normal = normal;
-        } 
-		else
-		{
-			collisionAttributes = null;
-		}
+            returnCollisionAttributes.collisionPoint = position + requestedMovement;
+            returnCollisionAttributes.normal = normal;
+            returnCollisionAttributes.otherCollider = returnCollider;
+        }
 
-		return returnCollider;
+        return returnCollisionAttributes;
 	}
 
 	public Vector2 RequestMovement(Vector2 position, Vector2 remainingMovement, CircleCollider2D circleCollider)
@@ -162,8 +165,8 @@ public class CollisionDetector : MonoBehaviour {
 			            												    transform.position.y - scaledRadius - Mathf.Abs (remainingMovement.y)));
             #endif
 
-            CollisionAttributes nextCollision = null;
-			GetNextCollision(position, remainingMovement, circleCollider, ref nextCollision);
+            CollisionAttributes nextCollision = GetNextCollision(position, remainingMovement, circleCollider); ;
+			
 
 			if(nextCollision == null)
 			{
