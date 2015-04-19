@@ -8,7 +8,6 @@ public class Bullet : MonoBehaviour {
     private CircleCollider2D    circleCollider;
 	private int                 bounceCount;
     private CollisionDetector   collisionDetector;
-    private bool                destroyNextFrame;
 
 	// Use this for initialization
 	void Start () {
@@ -29,8 +28,12 @@ public class Bullet : MonoBehaviour {
         while (collisionAttributes != null)
         {
             Destructible otherDestructible = null;
+            Bullet otherBullet = null;
             if (collisionAttributes.otherCollider != null)
+            {
                 otherDestructible = collisionAttributes.otherCollider.GetComponent<Destructible>();
+                otherBullet = collisionAttributes.otherCollider.GetComponent<Bullet>();
+            }
 
             if (otherDestructible != null)        //TODO: Exclude firing entity if bounceCount = 0
             {
@@ -38,12 +41,19 @@ public class Bullet : MonoBehaviour {
                 if (otherDestructible.health <= 0)
                     DestroyObject(otherDestructible.gameObject);
 
-                Destroy(this.gameObject);
+                DestroyObject(this.gameObject);
                 break;
             }
-            if (bounceCount == maxBounces)
+            
+            if (otherBullet != null)
             {
-                Destroy(this.gameObject);
+                otherBullet.OnCollisionWithOtherBullet(collisionAttributes.normal);
+                Debug.Log("Got other Bullet!");
+            }
+
+            if (bounceCount >= maxBounces)
+            {
+                DestroyObject(this.gameObject);
                 break;
             }
             
@@ -88,5 +98,13 @@ public class Bullet : MonoBehaviour {
 		//Debug.Log("Bullet firerd in direction: " + movementDirection.x + "  " + movementDirection.y);
 
 	}
+
+    public void OnCollisionWithOtherBullet(Vector2 normal)
+    {
+        if (bounceCount >= maxBounces)
+            Destroy(this.gameObject);
+        movementDirection = movementDirection - 2 * Vector2.Dot(movementDirection, normal) * normal;
+        bounceCount++;
+    }
 
 }

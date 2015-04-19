@@ -27,7 +27,7 @@ public class CollisionDetector : MonoBehaviour {
         Collider2D returnCollider = null;
 			
 		foreach (Collider2D otherCollider in colliders) {
-			if(otherCollider.isTrigger)
+			if(otherCollider.isTrigger == true)
 				continue;
 			if (otherCollider.GetType () == typeof(BoxCollider2D)) {
 				BoxCollider2D boxCollider = otherCollider as BoxCollider2D;

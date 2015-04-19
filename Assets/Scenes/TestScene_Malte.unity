@@ -171,7 +171,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemyPrefab: {fileID: 181034, guid: 449a75b0fa393490e8132be239140fd8, type: 2}
-  timeBetweenSpawns: 5
+  timeBetweenSpawns: 10
 --- !u!212 &287106891
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -1116,7 +1116,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1162416ecd40ad41bc74fb8f3b35389, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
+  maxHealth: 1000
   health: 0
 --- !u!114 &1920867429
 MonoBehaviour:
