@@ -14,13 +14,15 @@ public class Bullet : MonoBehaviour {
         collisionDetector = GetComponent<CollisionDetector>();
         circleCollider = GetComponent<CircleCollider2D>();
 		bounceCount = 0;
+
+        CollisionHandler collisionHandler = GetComponent<CollisionHandler>();
+        collisionHandler.handleCollision = OnCollisionWithOtherBullet;
     }
 	
 	void Update(){
 
         Vector2 position = transform.position;
 		Vector2 requestedMovement = movementDirection * movementSpeed * Time.deltaTime;
-		//Debug.Log("Requested Movement in direction: " + movementDirection.x + "  " + movementDirection.y);
         CollisionAttributes collisionAttributes = null;
 
         collisionAttributes = collisionDetector.GetNextCollision(position, requestedMovement, circleCollider);
@@ -28,12 +30,8 @@ public class Bullet : MonoBehaviour {
         while (collisionAttributes != null)
         {
             Destructible otherDestructible = null;
-            Bullet otherBullet = null;
             if (collisionAttributes.otherCollider != null)
-            {
                 otherDestructible = collisionAttributes.otherCollider.GetComponent<Destructible>();
-                otherBullet = collisionAttributes.otherCollider.GetComponent<Bullet>();
-            }
 
             if (otherDestructible != null)        //TODO: Exclude firing entity if bounceCount = 0
             {
@@ -43,12 +41,6 @@ public class Bullet : MonoBehaviour {
 
                 DestroyObject(this.gameObject);
                 break;
-            }
-            
-            if (otherBullet != null)
-            {
-                otherBullet.OnCollisionWithOtherBullet(collisionAttributes.normal);
-                Debug.Log("Got other Bullet!");
             }
 
             if (bounceCount >= maxBounces)
@@ -95,16 +87,29 @@ public class Bullet : MonoBehaviour {
 	{
 		movementDirection = direction;
 		movementDirection.Normalize();
-		//Debug.Log("Bullet firerd in direction: " + movementDirection.x + "  " + movementDirection.y);
-
 	}
 
-    public void OnCollisionWithOtherBullet(Vector2 normal)
+    public void OnCollisionWithOtherBullet(CollisionAttributes collisionAttributes)
     {
-        if (bounceCount >= maxBounces)
-            Destroy(this.gameObject);
-        movementDirection = movementDirection - 2 * Vector2.Dot(movementDirection, normal) * normal;
-        bounceCount++;
+        if (collisionAttributes.otherCollider.GetComponent<Bullet>() != null)
+        {
+            if (bounceCount >= maxBounces)
+                Destroy(this.gameObject);
+            movementDirection = movementDirection - 2 * Vector2.Dot(movementDirection, collisionAttributes.normal) * collisionAttributes.normal;
+            bounceCount++;
+        }
+        else
+        {
+            Destructible otherDestructible = collisionAttributes.otherCollider.GetComponent<Destructible>();
+            if (otherDestructible != null)
+            {
+                otherDestructible.health -= 10;
+                if (otherDestructible.health <= 0)
+                    DestroyObject(otherDestructible.gameObject);
+
+                DestroyObject(this.gameObject);
+            }
+        }
     }
 
 }

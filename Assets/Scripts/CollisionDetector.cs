@@ -3,9 +3,23 @@ using System.Collections;
 
 public class CollisionAttributes
 {
-    public Collider2D  otherCollider;
-	public Vector2     collisionPoint;
-	public Vector2     normal;
+    public Collider2D otherCollider;
+    public Vector2 collisionPoint;
+    public Vector2 normal;
+
+    public CollisionAttributes()
+    {
+        otherCollider = null;
+        collisionPoint = Vector2.zero;
+        normal = Vector2.zero;
+    }
+
+    public CollisionAttributes(CollisionAttributes collisionAttributes)
+    {
+        otherCollider = collisionAttributes.otherCollider;
+        collisionPoint = collisionAttributes.collisionPoint;
+        normal = collisionAttributes.normal;
+    }
 };
 
 public class CollisionDetector : MonoBehaviour {
@@ -141,6 +155,14 @@ public class CollisionDetector : MonoBehaviour {
             returnCollisionAttributes.collisionPoint = position + requestedMovement;
             returnCollisionAttributes.normal = normal;
             returnCollisionAttributes.otherCollider = returnCollider;
+
+            CollisionHandler otherObjectsCollisionHandler = returnCollider.GetComponent<CollisionHandler>();
+            if (otherObjectsCollisionHandler != null)
+            {
+                CollisionAttributes otherCollisionAttributes = new CollisionAttributes(returnCollisionAttributes);
+                otherCollisionAttributes.otherCollider = circleCollider;
+                otherObjectsCollisionHandler.handleCollision(otherCollisionAttributes);
+            }
         }
 
         return returnCollisionAttributes;
